@@ -1,0 +1,75 @@
+---
+#ref: https://cloudwatch-console-static-content-prod-iad.s3.us-east-1.amazonaws.com/26e81e64502963e4b07b9e6575a9bac9e405e1fd/cross-account/CloudWatch-CrossAccountSharingRole-AccountList-aws.yaml
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Enables CloudWatch in central monitoring accounts to assume permissions to view CloudWatch data in the current account
+
+Parameters:
+  ObservabilityOuPath:
+    Type: String
+    Description: OU of observability accounts
+
+  Policy:
+    Description: The level of access to give to the Monitoring accounts
+    Type: String
+    Default: CloudWatch-and-AutomaticDashboards
+    AllowedValues:
+      - CloudWatch-and-AutomaticDashboards
+      - CloudWatch-and-ServiceLens
+      - CloudWatch-AutomaticDashboards-and-ServiceLens
+      - CloudWatch-core-permissions
+      - View-Access-for-all-services
+
+  MonitoringAccountId:
+    Description: ID of monitoring account
+    Type: String
+
+Conditions:
+  DoFullReadOnly: !Equals [ !Ref Policy, View-Access-for-all-services ]
+  DoAutomaticDashboards: !Equals [ !Ref Policy, CloudWatch-and-AutomaticDashboards ]
+  DoServiceLens: !Equals [ !Ref Policy, CloudWatch-and-ServiceLens ]
+  DoServiceLensAndAutomaticDashboards: !Equals [ !Ref Policy, CloudWatch-AutomaticDashboards-and-ServiceLens ]
+  IsNotMonitoringAccount: !Not [ !Equals [ !Ref AWS::AccountId, !Ref MonitoringAccountId] ]
+
+Resources:
+  CWCrossAccountSharingRole:
+    Type: AWS::IAM::Role
+    Condition: IsNotMonitoringAccount
+    Properties:
+      RoleName: CloudWatch-CrossAccountSharingRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: '*'
+            Action:
+              - sts:AssumeRole
+            Condition:
+              StringEquals:
+                "aws:PrincipalOrgPaths": !Ref ObservabilityOuPath
+      Path: "/"
+      ManagedPolicyArns: !If
+        - DoFullReadOnly
+        -
+          - arn:aws:iam::aws:policy/CloudWatchReadOnlyAccess
+          - arn:aws:iam::aws:policy/CloudWatchAutomaticDashboardsAccess
+          - arn:aws:iam::aws:policy/job-function/ViewOnlyAccess
+          - arn:aws:iam::aws:policy/AWSXrayReadOnlyAccess
+        - !If
+          - DoAutomaticDashboards
+          -
+            - arn:aws:iam::aws:policy/CloudWatchReadOnlyAccess
+            - arn:aws:iam::aws:policy/CloudWatchAutomaticDashboardsAccess
+          - !If
+            - DoServiceLens
+            -
+              - arn:aws:iam::aws:policy/CloudWatchReadOnlyAccess
+              - arn:aws:iam::aws:policy/AWSXrayReadOnlyAccess
+            - !If
+              - DoServiceLensAndAutomaticDashboards
+              -
+                - arn:aws:iam::aws:policy/CloudWatchReadOnlyAccess
+                - arn:aws:iam::aws:policy/CloudWatchAutomaticDashboardsAccess
+                - arn:aws:iam::aws:policy/AWSXrayReadOnlyAccess
+              -
+                - arn:aws:iam::aws:policy/CloudWatchReadOnlyAccess

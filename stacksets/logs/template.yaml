@@ -1,0 +1,41 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudWatch logs destination configuration
+
+Parameters:
+  DestinationArn:
+    Type: String
+
+Conditions:
+  IsLoggingAccount: !Equals [ !Ref AWS::AccountId, !Select [ 4, !Split [ ":", !Ref DestinationArn ] ] ]
+  IsNotLoggingAccount: !Not [ Condition: IsLoggingAccount ]
+
+Resources:
+  CloudWatchLogsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: !Sub "logs.${AWS::Region}.amazonaws.com"
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: !Sub "${AWS::StackName}-datadog-cloudwatch-logs-policy"
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - firehose:PutRecord
+                  - firehose:PutRecordBatch
+                  - kinesis:PutRecord
+                Resource: !Ref DestinationArn
+
+  CloudWatchAccountPolicy:
+    Type: AWS::Logs::AccountPolicy
+    Condition: IsNotLoggingAccount
+    Properties:
+      PolicyName: Datadog-Logs-Firehose
+      PolicyDocument: !Sub '{ "RoleArn": "${CloudWatchLogsRole.Arn}", "DestinationArn": "${DestinationArn}", "FilterPattern": ""}'
+      PolicyType: "SUBSCRIPTION_FILTER_POLICY"

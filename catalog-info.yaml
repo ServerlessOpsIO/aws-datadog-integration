@@ -1,0 +1,13 @@
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: aws-datadog-integration
+  description: AWS -> Datadog integration for AWS Organizations
+  annotations:
+    github.com/project-slug: ServerlessOpsIO/aws-datadog-integration
+spec:
+  type: cloud-config
+  lifecycle: production
+  owner: group:0319y80a3hmm9y7
+  system: system:datadog

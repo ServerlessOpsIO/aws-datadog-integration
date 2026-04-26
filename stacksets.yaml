@@ -1,0 +1,154 @@
+Metadata:
+  Logs:
+    localTemplateFile: &template_body ./stacksets/logs/template.yaml
+  OamLink:
+    localTemplateFile: &oam_link_template_body ./stacksets/metrics/template-oam-link.yaml
+  CrossAccountSharing:
+    localTemplateFile: &cross_account_sharing_template_body ./stacksets/metrics/template-cw-cross-account-sharing.yaml
+
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: AWS account infrastructure stackset (datadog integration)
+
+Parameters:
+  AwsOamSinkArn:
+    Type: String
+  TargetOUs:
+    Type: CommaDelimitedList
+  TargetRegions:
+    Type: CommaDelimitedList
+  DatadogTemplateUrl:
+    Type: String
+  DatadogSite:
+    Type: String
+  DatadogApiKey:
+    Type: String
+    NoEcho: 'true'
+  DatadogAppKey:
+    Type: String
+    NoEcho: 'true'
+  DataDogLogsDestinationArn:
+    Type: String
+  DisableMetricCollection:
+    Type: String
+    Default: 'false'
+
+Resources:
+  DatadogIntegrationStackSet:
+    Type: AWS::CloudFormation::StackSet
+    Properties:
+      StackSetName: DatadogIntegration
+      Description: Datadog integration
+      Parameters:
+        - ParameterKey: DatadogSite
+          ParameterValue: !Ref DatadogSite
+        - ParameterKey: DatadogApiKey
+          ParameterValue: !Ref DatadogApiKey
+        - ParameterKey: DatadogAppKey
+          ParameterValue: !Ref DatadogAppKey
+        - ParameterKey: DisableMetricCollection
+          ParameterValue: !Ref DisableMetricCollection
+      Capabilities:
+        - CAPABILITY_IAM
+        - CAPABILITY_NAMED_IAM
+      StackInstancesGroup:
+        - DeploymentTargets:
+            OrganizationalUnitIds: !Ref TargetOUs
+          Regions: !Ref TargetRegions
+      AutoDeployment:
+        Enabled: true
+        RetainStacksOnAccountRemoval: false
+      ManagedExecution:
+        Active: true
+      OperationPreferences:
+        RegionConcurrencyType: PARALLEL
+        ConcurrencyMode: SOFT_FAILURE_TOLERANCE
+        FailureToleranceCount: 1
+        MaxConcurrentCount: 5
+      PermissionModel: SERVICE_MANAGED
+      TemplateURL: !Ref DatadogTemplateUrl
+
+  CloudWatchOamLinkStackSet:
+    Type: AWS::CloudFormation::StackSet
+    Properties:
+      StackSetName: CloudWatchOamLink
+      Description: CloudWatch OAM Link
+      Parameters:
+        - ParameterKey: AwsOamSinkArn
+          ParameterValue: !Ref AwsOamSinkArn
+      StackInstancesGroup:
+        - DeploymentTargets:
+            OrganizationalUnitIds: !Ref TargetOUs
+          Regions: !Ref TargetRegions
+      AutoDeployment:
+        Enabled: true
+        RetainStacksOnAccountRemoval: false
+      ManagedExecution:
+        Active: true
+      OperationPreferences:
+        RegionConcurrencyType: PARALLEL
+        ConcurrencyMode: SOFT_FAILURE_TOLERANCE
+        FailureToleranceCount: 1
+        MaxConcurrentCount: 5
+      PermissionModel: SERVICE_MANAGED
+      TemplateBody: *oam_link_template_body
+
+  CloudWatchCrossAccountShareStackSet:
+    Type: AWS::CloudFormation::StackSet
+    Properties:
+      StackSetName: CloudWatchCrossAccountShare
+      Description: CloudWatch cross-account sharing
+      Parameters:
+        - ParameterKey: ObservabilityOuPath
+          ParameterValue:  !Ref ObservabilityOuPath
+        - ParameterKey: MonitoringAccountId
+          ParameterValue:  !Ref MonitoringAccountId
+        - ParameterKey: Policy
+          ParameterValue: !Ref CrossAccountSharingPolicy
+      StackInstancesGroup:
+        - DeploymentTargets:
+            OrganizationalUnitIds: !Ref TargetOUs
+          Regions: !Ref TargetRegions
+      Capabilities:
+        - CAPABILITY_IAM
+        - CAPABILITY_NAMED_IAM
+      AutoDeployment:
+        Enabled: true
+        RetainStacksOnAccountRemoval: false
+      ManagedExecution:
+        Active: true
+      OperationPreferences:
+        RegionConcurrencyType: PARALLEL
+        ConcurrencyMode: SOFT_FAILURE_TOLERANCE
+        MaxConcurrentCount: 5
+        FailureToleranceCount: 1
+      PermissionModel: SERVICE_MANAGED
+      TemplateBody: *cross_account_sharing_template_body
+
+  DatadogLogShippingStackSet:
+    Type: AWS::CloudFormation::StackSet
+    Properties:
+      StackSetName: DatadogLogging
+      Description: Datadog logging
+      Parameters:
+        - ParameterKey: DestinationArn
+          ParameterValue: !Ref DataDogLogsDestinationArn
+      Capabilities:
+        - CAPABILITY_IAM
+      StackInstancesGroup:
+        - DeploymentTargets:
+            OrganizationalUnitIds: !Ref TargetOUs
+          Regions: !Ref TargetRegions
+      AutoDeployment:
+        Enabled: true
+        RetainStacksOnAccountRemoval: false
+      ManagedExecution:
+        Active: true
+      OperationPreferences:
+        RegionConcurrencyType: PARALLEL
+        ConcurrencyMode: SOFT_FAILURE_TOLERANCE
+        FailureToleranceCount: 1
+        MaxConcurrentCount: 5
+      PermissionModel: SERVICE_MANAGED
+      TemplateBody: *template_body
+

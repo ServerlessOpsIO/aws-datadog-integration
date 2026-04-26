@@ -1,0 +1,64 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: AWS account observability stack
+
+Parameters:
+  AwsOamSinkArn:
+    Type: String
+  AwsOrgId:
+    Type: String
+  AwsOrgRootId:
+    Type: String
+  ManagementOu:
+    Type: String
+  ObservabilityOu:
+    Type: String
+  # WARNING: due to a limitation of AWS SAM's `package` command the DatadogIntegrationStack
+  # Location parameter must be kept in sync manually.
+  DatadogTemplateUrl:
+    Type: String
+  DatadogSite:
+    Type: String
+  DatadogApiKey:
+    Type: String
+    NoEcho: 'true'
+  DatadogAppKey:
+    Type: String
+    NoEcho: 'true'
+  DataDogLogsDestinationArn:
+    Type: String
+    NoEcho: 'true'
+
+Resources:
+  DatadogIntegrationStack:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: !Ref DatadogTemplateUrl
+      Parameters:
+        DatadogApiKey: !Ref DatadogApiKey
+        DatadogAppKey: !Ref DatadogAppKey
+        DatadogSite: !Ref DatadogSite
+        DisableMetricCollection: 'false'
+
+  LogShippingStack:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: "./stacksets/logs/template.yaml"
+      Parameters:
+        DestinationArn: !Ref DataDogLogsDestinationArn
+
+  MetricsSinkStack:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: "./stacksets/metrics/template-oam-link.yaml"
+      Parameters:
+        AwsOamSinkArn: !Ref AwsOamSinkArn
+
+  CwCrossAccountShareStack:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: "./stacksets/metrics/template-cw-cross-account-sharing.yaml"
+      Parameters:
+        ObservabilityOuPath: !Sub "${AwsOrgId}/${AwsOrgRootId}/${ManagementOu}/${ObservabilityOu}"
+        Policy: View-Access-for-all-services
+        MonitoringAccountId: !Select [ "4", !Split [ ":", !Ref AwsOamSinkArn ] ]
