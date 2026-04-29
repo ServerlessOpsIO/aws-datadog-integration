@@ -50,7 +50,9 @@ Resources:
   DatadogIntegrationStack:
     Type: AWS::Serverless::Application
     Properties:
-      Location: !Ref DatadogTemplateUrl
+      # FIXME: Location is hardcoded to work around a bug in SAM. Perhaps we switch to
+      # AWS::CloudFormation::Stack resources instead.
+      Location: "https://datadog-cloudformation-template.s3.amazonaws.com/aws/v4.2.0/main_organizations.yaml"
       Parameters:
         DatadogApiKey: !Ref DatadogApiKey
         DatadogAppKey: !Ref DatadogAppKey
