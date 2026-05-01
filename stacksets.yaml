@@ -29,6 +29,16 @@ Parameters:
     NoEcho: 'true'
   DataDogLogsDestinationArn:
     Type: String
+  CrossAccountSharingPolicy:
+    Description: The level of access to give to the Monitoring accounts
+    Type: String
+    AllowedValues:
+      - CloudWatch-and-AutomaticDashboards
+      - CloudWatch-and-ServiceLens
+      - CloudWatch-AutomaticDashboards-and-ServiceLens
+      - CloudWatch-core-permissions
+      - View-Access-for-all-services
+    Default: CloudWatch-core-permissions
   DisableMetricCollection:
     Type: String
     Default: 'false'

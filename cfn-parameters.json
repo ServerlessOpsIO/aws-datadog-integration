@@ -7,5 +7,6 @@
     "DataDogLogsDestinationArn": $secrets.DATADOG_LOGS_DESTINATION_ARN,
     "DatadogSite": "us5.datadoghq.com",
     "DatadogTemplateUrl": "https://datadog-cloudformation-template.s3.amazonaws.com/aws/v4.1.3/main_organizations.yaml",
-    "DisableMetricCollection": "true"
+    "DisableMetricCollection": "true",
+    "CrossAccountSharingPolicy": "CloudWatch-core-permissions"
 }
