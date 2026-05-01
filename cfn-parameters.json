@@ -1,9 +1,5 @@
 {
-    "AwsOrgId": $secrets.AWS_ORG_ID,
-    "AwsOrgRootId": $secrets.AWS_ORG_ROOT_ID,
     "AwsOamSinkArn": $secrets.AWS_OAM_SINK_ARN,
-    "ManagementOu": $secrets.AWS_ORG_MANAGEMENT_OU,
-    "ObservabilityOu": $secrets.AWS_ORG_OBSERVABILITY_OU,
     "TargetOUs": $secrets.AWS_ORG_ROOT_ID,
     "TargetRegions": "us-east-1",
     "DatadogApiKey": $secrets.DATADOG_API_KEY,

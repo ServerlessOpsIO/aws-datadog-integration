@@ -4,10 +4,6 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: Enables CloudWatch in central monitoring accounts to assume permissions to view CloudWatch data in the current account
 
 Parameters:
-  ObservabilityOuPath:
-    Type: String
-    Description: OU of observability accounts
-
   Policy:
     Description: The level of access to give to the Monitoring accounts
     Type: String
@@ -46,7 +42,7 @@ Resources:
               - sts:AssumeRole
             Condition:
               StringEquals:
-                "aws:PrincipalOrgPaths": !Ref ObservabilityOuPath
+                "aws:PrincipalAccount": !Ref MonitoringAccountId
       Path: "/"
       ManagedPolicyArns: !If
         - DoFullReadOnly

@@ -5,16 +5,6 @@ Description: AWS account observability stack
 Parameters:
   AwsOamSinkArn:
     Type: String
-  AwsOrgId:
-    Type: String
-  AwsOrgRootId:
-    Type: String
-  ManagementOu:
-    Type: String
-  ObservabilityOu:
-    Type: String
-  # WARNING: due to a limitation of AWS SAM's `package` command the DatadogIntegrationStack
-  # Location parameter must be kept in sync manually.
   DatadogTemplateUrl:
     Type: String
   DatadogSite:
@@ -84,6 +74,5 @@ Resources:
     Properties:
       Location: "./stacksets/metrics/template-cw-cross-account-sharing.yaml"
       Parameters:
-        ObservabilityOuPath: !Sub "${AwsOrgId}/${AwsOrgRootId}/${ManagementOu}/${ObservabilityOu}"
         Policy: View-Access-for-all-services
         MonitoringAccountId: !Select [ "4", !Split [ ":", !Ref AwsOamSinkArn ] ]
