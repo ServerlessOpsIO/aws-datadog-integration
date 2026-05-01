@@ -86,6 +86,7 @@ jobs:
           vars_json: ${{ toJson(vars) }}
           secrets_json: ${{ toJson(secrets) }}
           template_file: packaged-stacksets.yaml
+          stack_name: ${{ env.GITHUB_REPOSITORY_NAME_PART_SLUG_URL }}-stacksets-${{ env.GITHUB_EVENT_REF_SLUG_URL }}
 
   deploy_management:
     needs:
