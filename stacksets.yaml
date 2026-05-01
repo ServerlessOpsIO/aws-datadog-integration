@@ -32,6 +32,22 @@ Parameters:
   DisableMetricCollection:
     Type: String
     Default: 'false'
+  UseMetricsStreaming:
+    Type: String
+    AllowedValues:
+      - 'true'
+      - 'false'
+    Default: 'false'
+  UseLogsStreaming:
+    Type: String
+    AllowedValues:
+      - 'true'
+      - 'false'
+    Default: 'false'
+
+Conditions:
+  MetricStreamingEnabled: !Equals [ !Ref UseMetricsStreaming, 'true' ]
+  LogsStreamingEnabled: !Equals [ !Ref UseLogsStreaming, 'true' ]
 
 Resources:
   DatadogIntegrationStackSet:
@@ -70,6 +86,7 @@ Resources:
 
   CloudWatchOamLinkStackSet:
     Type: AWS::CloudFormation::StackSet
+    Condition: MetricStreamingEnabled
     Properties:
       StackSetName: CloudWatchOamLink
       Description: CloudWatch OAM Link
@@ -95,6 +112,7 @@ Resources:
 
   CloudWatchCrossAccountShareStackSet:
     Type: AWS::CloudFormation::StackSet
+    Condition: MetricStreamingEnabled
     Properties:
       StackSetName: CloudWatchCrossAccountShare
       Description: CloudWatch cross-account sharing
@@ -127,6 +145,7 @@ Resources:
 
   DatadogLogShippingStackSet:
     Type: AWS::CloudFormation::StackSet
+    Condition: LogsStreamingEnabled
     Properties:
       StackSetName: DatadogLogging
       Description: Datadog logging

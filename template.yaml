@@ -28,6 +28,23 @@ Parameters:
   DataDogLogsDestinationArn:
     Type: String
     NoEcho: 'true'
+  UseMetricsStreaming:
+    Type: String
+    AllowedValues:
+      - 'true'
+      - 'false'
+    Default: 'false'
+  UseLogsStreaming:
+    Type: String
+    AllowedValues:
+      - 'true'
+      - 'false'
+    Default: 'false'
+
+Conditions:
+  MetricStreamingEnabled: !Equals [ !Ref UseMetricsStreaming, 'true' ]
+  LogsStreamingEnabled: !Equals [ !Ref UseLogsStreaming, 'true' ]
+
 
 Resources:
   DatadogIntegrationStack:
@@ -42,6 +59,7 @@ Resources:
 
   LogShippingStack:
     Type: AWS::Serverless::Application
+    Condition: LogsStreamingEnabled
     Properties:
       Location: "./stacksets/logs/template.yaml"
       Parameters:
@@ -49,6 +67,7 @@ Resources:
 
   MetricsSinkStack:
     Type: AWS::Serverless::Application
+    Condition: MetricStreamingEnabled
     Properties:
       Location: "./stacksets/metrics/template-oam-link.yaml"
       Parameters:
@@ -56,6 +75,7 @@ Resources:
 
   CwCrossAccountShareStack:
     Type: AWS::Serverless::Application
+    Condition: MetricStreamingEnabled
     Properties:
       Location: "./stacksets/metrics/template-cw-cross-account-sharing.yaml"
       Parameters:
