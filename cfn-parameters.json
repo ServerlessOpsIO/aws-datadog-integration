@@ -6,7 +6,7 @@
     "DatadogAppKey": $secrets.DATADOG_APP_KEY,
     "DataDogLogsDestinationArn": $secrets.DATADOG_LOGS_DESTINATION_ARN,
     "DatadogSite": "us5.datadoghq.com",
-    "DatadogTemplateUrl": "https://datadog-cloudformation-template.s3.amazonaws.com/aws/v4.1.4/main_organizations.yaml",
+    "DatadogTemplateUrl": "https://datadog-cloudformation-template.s3.amazonaws.com/aws/v4.2.0/main_organizations.yaml",
     "DisableMetricCollection": "true",
     "CrossAccountSharingPolicy": "CloudWatch-core-permissions"
 }
