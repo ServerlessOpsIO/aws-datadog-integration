@@ -84,5 +84,5 @@ Resources:
     Properties:
       Location: "./stacksets/metrics/template-cw-cross-account-sharing.yaml"
       Parameters:
-        Policy: View-Access-for-all-services
+        Policy: !Ref CrossAccountSharingPolicy
         MonitoringAccountId: !Select [ "4", !Split [ ":", !Ref AwsOamSinkArn ] ]
