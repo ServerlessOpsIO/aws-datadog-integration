@@ -2,16 +2,38 @@
 
 Deploys the Datadog AWS integration and CloudWatch observability configuration across an AWS organization. Covers log shipping, metrics collection, and cross-account CloudWatch access for a central observability account.
 
+## CloudFormation Stack Parameters
+
+| Parameter | Description |
+|---|---|
+| `TargetOUs` | Comma-delimited list of Organization OU IDs targeted by StackSets |
+| `TargetRegions` | Comma-delimited list of regions targeted by StackSets |
+| `DatadogTemplateUrl` | URL to the Datadog CloudFormation template in S3 |
+| `DatadogSite` | Datadog site (e.g. `us5.datadoghq.com`) |
+| `DatadogApiKey` | Datadog API key |
+| `DatadogAppKey` | Datadog App key |
+| `DataDogLogsDestinationArn` | ARN of the Kinesis Firehose destination for log shipping |
+| `AwsOamSinkArn` | ARN of the CloudWatch OAM Sink in the observability account |
+| `DisableMetricCollection` | Passed to the Datadog integration template |
+| `CrossAccountSharingPolicy` | Access level for cross-account CloudWatch role |
+| `UseMetricsStreaming` | Whether to deploy OAM link and cross-account sharing stacks |
+| `UseLogsStreaming` | Whether to deploy logs shipping stack |
+
+
 ## Infrastructure
 
 ### Datadog Integration (`DatadogIntegrationStack` / `DatadogIntegrationStackSet`)
 
-Deploys the [Datadog CloudFormation template](https://datadog-cloudformation-template.s3.amazonaws.com/aws/main_organizations.yaml) which creates the IAM roles and policies required for Datadog to collect metrics and events from AWS. Deployed to each account in the organization via a StackSet.
+Deploys the Datadog CloudFormation template that creates the IAM roles and policies required for Datadog to collect metrics and events from AWS.
+
+- `stacksets.yaml`: uses the `DatadogTemplateUrl` parameter.
+- `template.yaml` (management account): currently hardcodes URL due to an AWS SAM packaging limitation noted in the template.
 
 ### Log Shipping (`LogShippingStack` / `DatadogLogShippingStackSet`)
 
 Configures CloudWatch Logs account-level subscription filters to forward all log groups to Datadog via a Kinesis Data Firehose destination. Uses an IAM role to allow the CloudWatch Logs service to write records to the Firehose stream.
 
+- Controlled by `UseLogsStreaming` parameter.
 - Only applied to accounts that are **not** the logging/destination account itself.
 - Source template: `stacksets/logs/template.yaml`
 
@@ -26,11 +48,15 @@ Creates an [AWS CloudWatch Observability Access Manager (OAM)](https://docs.aws.
 
 Log groups are intentionally excluded (handled by the Firehose log shipping path above). Only applied to accounts that are **not** the sink account itself.
 
+- Controlled by `UseMetricsStreaming` parameter.
 - Source template: `stacksets/metrics/template-oam-link.yaml`
 
-### CloudWatch Cross-Account Sharing (`CwCrossAccountShareStack` / `CloudWatcCrossAccountShareStackSet`)
+### CloudWatch Cross-Account Sharing (`CwCrossAccountShareStack` / `CloudWatchCrossAccountShareStackSet`)
 
-Creates the `CloudWatch-CrossAccountSharingRole` IAM role in each account, allowing accounts in the observability OU to assume it and read CloudWatch data. The level of access is configurable via the `Policy` parameter (defaults to `View-Access-for-all-services`).
+Creates the `CloudWatch-CrossAccountSharingRole` IAM role in each account, allowing the monitoring account to assume it and read CloudWatch data.
+
+- Deployed and configured if `UseMetricsStreaming` is `true`.
+- Policy is configurable via `CrossAccountSharingPolicy` parameter.
 
 - Only applied to accounts that are **not** the monitoring account itself.
 - Source template: `stacksets/metrics/template-cw-cross-account-sharing.yaml`
@@ -62,7 +88,7 @@ graph TD
     F[stacksets.yaml\nOrg-wide StackSet deploy] --> G[DatadogIntegrationStackSet\nDatadog CF template]
     F --> H[DatadogLogShippingStackSet\nstacksets/logs/template.yaml]
     F --> I[CloudWatchOamLinkStackSet\nstacksets/metrics/template-oam-link.yaml]
-    F --> J[CloudWatcCrossAccountShareStackSet\nstacksets/metrics/template-cw-cross-account-sharing.yaml]
+    F --> J[CloudWatchCrossAccountShareStackSet\nstacksets/metrics/template-cw-cross-account-sharing.yaml]
 ```
 
 ### Data Flow
@@ -94,18 +120,3 @@ flowchart LR
 ## Deployment
 
 The pipeline builds and deploys via GitHub Actions on push to `main`. SAM is used for packaging and deployment.
-
-### Parameters
-
-| Parameter | Description |
-|---|---|
-| `AwsOrgId` | AWS Organization ID |
-| `AwsOrgRootId` | AWS Organization root ID |
-| `ManagementOu` | Management OU ID |
-| `ObservabilityOu` | Observability OU ID |
-| `DatadogTemplateUrl` | URL to the Datadog CloudFormation template in S3 |
-| `DatadogSite` | Datadog site (e.g. `us5.datadoghq.com`) |
-| `DatadogApiKey` | Datadog API key |
-| `DatadogAppKey` | Datadog App key |
-| `DataDogLogsDestinationArn` | ARN of the Kinesis Firehose destination for log shipping |
-| `AwsOamSinkArn` | ARN of the CloudWatch OAM Sink in the observability account |
