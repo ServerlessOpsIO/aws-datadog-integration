@@ -8,5 +8,7 @@
     "DatadogSite": "us5.datadoghq.com",
     "DatadogTemplateUrl": "https://datadog-cloudformation-template.s3.amazonaws.com/aws/v4.2.1/main_organizations.yaml",
     "DisableMetricCollection": "true",
+    "UseMetricsStreaming": "true",
+    "UseLogsStreaming": "true",
     "CrossAccountSharingPolicy": "CloudWatch-core-permissions"
 }
