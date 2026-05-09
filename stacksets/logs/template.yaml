@@ -36,11 +36,11 @@ Resources:
             Resource: !Ref DestinationArn
       RoleName: !Ref CloudWatchLogsRole
 
-  CloudWatchAccountPolicy:
-    Type: AWS::Logs::AccountPolicy
-    Condition: IsNotLoggingAccount
-    DependsOn: CloudWatchLogsFirehosePolicy
-    Properties:
-      PolicyName: Datadog-Logs-Firehose
-      PolicyDocument: !Sub '{ "RoleArn": "${CloudWatchLogsRole.Arn}", "DestinationArn": "${DestinationArn}", "FilterPattern": ""}'
-      PolicyType: "SUBSCRIPTION_FILTER_POLICY"
+#  CloudWatchAccountPolicy:
+#    Type: AWS::Logs::AccountPolicy
+#    Condition: IsNotLoggingAccount
+#    DependsOn: CloudWatchLogsFirehosePolicy
+#    Properties:
+#      PolicyName: Datadog-Logs-Firehose
+#      PolicyDocument: !Sub '{ "RoleArn": "${CloudWatchLogsRole.Arn}", "DestinationArn": "${DestinationArn}", "FilterPattern": ""}'
+#      PolicyType: "SUBSCRIPTION_FILTER_POLICY"
