@@ -12,7 +12,7 @@ Deploys the Datadog AWS integration and CloudWatch observability configuration a
 | `DatadogSite` | Datadog site (e.g. `us5.datadoghq.com`) |
 | `DatadogApiKey` | Datadog API key |
 | `DatadogAppKey` | Datadog App key |
-| `DataDogLogsDestinationArn` | ARN of the Kinesis Firehose destination for log shipping |
+| `DataDogLogsDestinationArn` | ARN of the Kinesis Firehose (local) or CloudWatch logs destination (cross-account) for log shipping |
 | `AwsOamSinkArn` | ARN of the CloudWatch OAM Sink in the observability account |
 | `DisableMetricCollection` | Passed to the Datadog integration template |
 | `CrossAccountSharingPolicy` | Access level for cross-account CloudWatch role |
