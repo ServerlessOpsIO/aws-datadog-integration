@@ -20,21 +20,26 @@ Resources:
             Principal:
               Service: !Sub "logs.${AWS::Region}.amazonaws.com"
             Action: sts:AssumeRole
-      Policies:
-        - PolicyName: !Sub "${AWS::StackName}-datadog-cloudwatch-logs-policy"
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - firehose:PutRecord
-                  - firehose:PutRecordBatch
-                  - kinesis:PutRecord
-                Resource: !Ref DestinationArn
+
+  CloudWatchLogsFirehosePolicy:
+    Type: AWS::IAM::RolePolicy
+    Properties:
+      PolicyName: datadog-cloudwatch-logs-policy
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - firehose:PutRecord
+              - firehose:PutRecordBatch
+              - kinesis:PutRecord
+            Resource: !Ref DestinationArn
+      RoleName: !Ref CloudWatchLogsRole
 
   CloudWatchAccountPolicy:
     Type: AWS::Logs::AccountPolicy
     Condition: IsNotLoggingAccount
+    DependsOn: CloudWatchLogsFirehosePolicy
     Properties:
       PolicyName: Datadog-Logs-Firehose
       PolicyDocument: !Sub '{ "RoleArn": "${CloudWatchLogsRole.Arn}", "DestinationArn": "${DestinationArn}", "FilterPattern": ""}'
