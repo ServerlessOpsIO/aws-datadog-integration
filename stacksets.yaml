@@ -89,8 +89,8 @@ Resources:
       OperationPreferences:
         RegionConcurrencyType: PARALLEL
         ConcurrencyMode: SOFT_FAILURE_TOLERANCE
-        MaxConcurrentCount: 5
-        FailureToleranceCount: 2
+        MaxConcurrentCount: 10
+        FailureToleranceCount: 5
       PermissionModel: SERVICE_MANAGED
       TemplateURL: !Ref DatadogTemplateUrl
 
@@ -115,8 +115,8 @@ Resources:
       OperationPreferences:
         RegionConcurrencyType: PARALLEL
         ConcurrencyMode: SOFT_FAILURE_TOLERANCE
-        MaxConcurrentCount: 5
-        FailureToleranceCount: 2
+        MaxConcurrentCount: 10
+        FailureToleranceCount: 5
       PermissionModel: SERVICE_MANAGED
       TemplateBody: *oam_link_template_body
 
@@ -174,8 +174,8 @@ Resources:
       OperationPreferences:
         RegionConcurrencyType: PARALLEL
         ConcurrencyMode: SOFT_FAILURE_TOLERANCE
-        MaxConcurrentCount: 5
-        FailureToleranceCount: 2
+        MaxConcurrentCount: 10
+        FailureToleranceCount: 5
       PermissionModel: SERVICE_MANAGED
       TemplateBody: *template_body
 
